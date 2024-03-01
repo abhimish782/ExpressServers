@@ -21,7 +21,7 @@
     Request Body: JSON object representing the todo item.
     Response: 201 Created with the ID of the created todo item in JSON format. eg: {id: 1}
     Example: POST http://localhost:3000/todos
-    Request Body: { "title": "Buy groceries", "completed": false, description: "I should buy groceries" }
+    Request Body: { "title": "Buy groceries", "completed": false, desription: "I should buy groceries" }
     
   4. PUT /todos/:id - Update an existing todo item by ID
     Description: Updates an existing todo item identified by its ID.
@@ -41,9 +41,84 @@
  */
 const express = require('express');
 const bodyParser = require('body-parser');
-
+const PORT=3000;
+const fs=require('fs');
 const app = express();
 
 app.use(bodyParser.json());
+
+let todoArr=[];
+
+let filePath='./responses.json';
+
+if(fs.existsSync(filePath)){
+  const savedData=fs.readFileSync(filePath);
+  todoArr=JSON.parse(savedData);
+}
+
+app.use((req, res, next) => {
+  res.on('finish', () => {
+      fs.writeFileSync(filePath, JSON.stringify(todoArr, null, 2));
+  });
+  next();
+});
+
+
+
+app.get('/todos', (req, res) =>{
+  //send back all todos as json
+  res.status(200).json(todoArr);
+});
+
+app.get('/todos/:id',(req,res)=>{
+  const id=req.params.id;
+  const ans=todoArr.find(ans=>ans.id==id);
+  if(!ans){
+    res.status(404).send('Not found');
+  }
+  else{
+    res.status(200).json(ans);
+  }
+});
+
+app.post('/todos',(req,res)=>{
+  const todo=req.body;
+  todo.id=todoArr.length+1;
+  todoArr.push(todo);
+  res.status(201).json({id:todo.id});
+});
+
+app.put('/todos/:id',(req,res)=>{
+  const id=req.params.id;
+  const idx=todoArr.findIndex(todo=>todo.id==id);
+  if(idx==-1){
+    res.status('404').send('Not found');
+  }
+  else{
+    todoArr[idx]={...todoArr[idx],...req.body};
+    res.status(200).send('Updated');
+  }
+});
+
+app.delete('/todos/:id',(req,res)=>{
+  const id=req.params.id;
+  const idx=todoArr.findIndex((todo)=>todo.id==id);
+  if(idx!=-1){
+    todoArr.splice(idx,1);
+    res.status(200).send('Deleted');
+  }
+  else{
+    res.status(404).send('Not found');
+  }
+});
+
+
+app.listen(PORT,()=>{
+  console.log("Server running on port 3000");
+});
+
+
+
+
 
 module.exports = app;
