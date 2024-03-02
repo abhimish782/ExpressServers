@@ -32,6 +32,41 @@
 const express = require("express")
 const PORT = 3000;
 const app = express();
-// write your logic here, DONT WRITE app.listen(3000) when you're running tests, the tests will automatically start the server
+
+let userData=[];
+
+app.use(express.json());
+
+app.post('/signup',(req,res)=>{
+  const  userDetails=req.body;
+  userDetails.id=userData.length+1;
+  const userName=userDetails.username;
+  const toFind=userData.find(user=>user.username==userName)
+  if(toFind!=undefined){
+    res.send(400).send("Bad request");
+  }
+  else{
+    userData.push(userDetails);
+    res.status(201).send("Created");
+  }
+});
+
+app.post('/login',(req,res)=>{
+  const {username,pass}=req.body;
+  const authToken="Auth_Token for"+username;
+
+  if(userData.find(user=>user.username===username && user.password === pass)){
+    res.status(200).json(authToken);
+  }
+  else{
+    res.send(401).send("Unauthorized Access");
+  }
+
+});
+
+
+
+
+app.listen(PORT,()=>console.log( "Authentication Server is running on port "+PORT));
 
 module.exports = app;
