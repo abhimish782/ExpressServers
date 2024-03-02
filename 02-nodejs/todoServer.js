@@ -63,8 +63,6 @@ app.use((req, res, next) => {
   next();
 });
 
-
-
 app.get('/todos', (req, res) =>{
   //send back all todos as json
   res.status(200).json(todoArr);
