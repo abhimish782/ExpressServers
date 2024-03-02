@@ -47,24 +47,45 @@ app.post('/signup',(req,res)=>{
   }
   else{
     userData.push(userDetails);
-    res.status(201).send("Created");
+    res.status(201).send(userData);
   }
 });
 
 app.post('/login',(req,res)=>{
   const {username,pass}=req.body;
   const authToken="Auth_Token for"+username;
-
-  if(userData.find(user=>user.username===username && user.password === pass)){
+  const access=userData.find(user=>user.username===username && user.password === pass);
+  if(!access){
     res.status(200).json(authToken);
   }
   else{
-    res.send(401).send("Unauthorized Access");
+    res.status(401).send("Unauthorized Access");
   }
-
 });
 
+const authenticateUser= (req,res,next)=>{
+  const {username,pass}=req.headers;
+  if(!username || !pass){
+    return res.status(401).send("Unauthorized");
+  }
+  else{
+    const authenticated=userData.find(user=>user.username===username && user.pass===pass);
+    if(!authenticated){
+        return res.status(401).send("Not authorized");
+    }
+    next();
+  }
+}
 
+
+app.get("/data",authenticateUser,(req,res)=>{
+  const ans = userData.map(user => ({ id: user.id, firstName: user.firstName, lastName: user.lastName }));
+    res.status(200).json({ ans });
+});
+
+app.use((req,res)=>{
+  res.status(404).send('Error  404 - Page Not Found');
+});
 
 
 app.listen(PORT,()=>console.log( "Authentication Server is running on port "+PORT));
