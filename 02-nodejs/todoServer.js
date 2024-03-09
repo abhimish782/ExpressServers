@@ -44,7 +44,8 @@ const bodyParser = require('body-parser');
 const PORT=3000;
 const fs=require('fs');
 const app = express();
-
+const cors=require("cors");
+app.use(cors());
 app.use(bodyParser.json());
 
 let todoArr=[];
@@ -52,8 +53,12 @@ let todoArr=[];
 let filePath='./responses.json';
 
 if(fs.existsSync(filePath)){
-  const savedData=fs.readFileSync(filePath);
-  todoArr=JSON.parse(savedData);
+  try{
+    const savedData=fs.readFileSync(filePath,"utf-8");
+    todoArr=JSON.parse(savedData);
+  }catch(err){
+    console.log("Error parsing saved data");
+  }
 }
 
 app.use((req, res, next) => {

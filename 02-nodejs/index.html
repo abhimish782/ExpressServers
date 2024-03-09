@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App</title>
+</head>
+
+<body>
+    Todo title 
+    <input type="text" id="title"></input>
+    <br><br>
+    Todo description
+    <input type="text"id="description"></input>
+    <br><br>
+    <button onclick="onPress()">Add Todo</button>
+
+    <div id="mainArea">
+        hi there
+    </div>
+</body>
+<script>
+    getData();
+    function getCallback2(data){
+        console.log(data);
+    }
+
+    function getCallback(resp){
+        resp.json().then(getCallback2);
+    }
+
+    function getData(){
+        fetch("http://localhost:3000/todos",{
+            method:"GET",
+        }).then(getCallback);
+    }
+    
+
+    function parsedResponse(data){
+        let parentArea=document.getElementById("mainArea");
+            //parentArea.innerHTML=JSON.stringify(data);
+            for(let i=0;i<data.length;i++){
+            let child= document.createElement('div');
+            let innerChild1=document.createElement("span");
+            innerChild1.innerHTML=data[i].title;
+            let innerChild2=document.createElement("span");
+            innerChild2.innerHTML=data[i].description;
+            let innerChild3=document.createElement("button");
+            innerChild3.innerHTML="DELETE";
+            child.appendChild(innerChild1);
+            child.appendChild(innerChild2);
+            child.appendChild(innerChild3);
+            parentArea.appendChild(child);
+            }
+    }
+
+    function callback(resp){
+        resp.json().then(parsedResponse);
+    }
+    function onPress(){
+        var title=document.getElementById("title").value;
+        var description=document.getElementById("description").value;
+        fetch("http://localhost:3000/todos",{
+            method:"POST",
+            body:JSON.stringify({
+                title:title,
+                description:description
+        }),
+            headers:{
+                "Content-Type":"application/json"
+            }
+        }).then(callback)
+    }
+</script>
+</html>
